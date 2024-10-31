@@ -9,6 +9,7 @@ function NavMenu({ navItems, onSelectedNavItemChange, selectedIdx }) {
   const [enableIndicatorTransition, setEnableIndicatorTransition] = useState(false);
 
   const updateIndicatorPosition = () => {
+    // We're moving the indicator under the <span> inside the active nav item.
     setIndicatorLeftOffset(activeItemRef.current.firstChild.offsetLeft);
     setIndicatorWidth(activeItemRef.current.firstChild.offsetWidth);
   }
@@ -27,16 +28,20 @@ function NavMenu({ navItems, onSelectedNavItemChange, selectedIdx }) {
     handleResize();
     
     return () => {
-     window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize);
     };
-    
   }, []);
 
+  // `updateIndicatorPosition()` runs as an effect of enableIndicatorTransition,
+  // so that we prevent a race condition where we update the indicator position
+  // before we enabled the CSS transition on it.
   useEffect(() => {
-    updateIndicatorPosition();
+    if (enableIndicatorTransition) {
+      updateIndicatorPosition();
+    }
   }, [enableIndicatorTransition]);
 
-  const handleNavItemClick = (event, idx) => {
+  const handleNavItemClick = (idx) => {
     if (idx === selectedIdx) return;
 
     setEnableIndicatorTransition(true);
@@ -49,7 +54,7 @@ function NavMenu({ navItems, onSelectedNavItemChange, selectedIdx }) {
         {navItems.map((city, idx) => (
           <li
             className={`nav-list-item ${selectedIdx === idx ? 'active' : ''}`}
-            onClick={(event) => handleNavItemClick(event, idx)}
+            onClick={() => handleNavItemClick(idx)}
             key={idx}
             ref={selectedIdx === idx ? activeItemRef : null}
           >
@@ -63,6 +68,8 @@ function NavMenu({ navItems, onSelectedNavItemChange, selectedIdx }) {
           style={{
             left: `${indicatorLeftOffset}px`,
             width: `${indicatorWidth}px`,
+            // We need to add / remove transition so that the indicator
+            // doesn't animate on page load or resize.
             transition: enableIndicatorTransition ? 'all 200ms' : 'none'
           }}
           onTransitionEnd={handleTransitionEnd}

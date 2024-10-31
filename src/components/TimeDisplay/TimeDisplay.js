@@ -6,6 +6,10 @@ function TimeDisplay({ selectedCity }) {
   const [timeData, setTimeData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * IANA city names are required to fetch the time at given locations.
+   * The keys in this object match the `"section"` property values in `navigation.json`.
+   */
   const CITY_TO_IANA_NAME = useMemo(() => ({
     cupertino: 'America/Los_Angeles',
     'new-york-city': 'America/New_York',
@@ -16,6 +20,15 @@ function TimeDisplay({ selectedCity }) {
     sydney: 'Australia/Sydney'
   }), []);
 
+  /**
+   * Since there are 3 different states we could display, it's more readable to move this logic
+   * outside of the JSX in the components return statement.
+   * 
+   * The 3 states to handle are:
+   * - Fetching data
+   * - Showing fetched time data
+   * - Failed to fetch time data
+   */
   const textToDisplay = () => {
     if (timeData) {
       const jsDateTime = new Date(timeData.dateTime);
@@ -61,14 +74,18 @@ function TimeDisplay({ selectedCity }) {
         console.error(error.message);
       }
   
+      // Either we failed to fetch data or we successfully got it, we need to set `isLoading` to `false`.
       setIsLoading(false);
     }
 
-    if (setIsLoading) {
+    // We need to make the fetching a side effect of `isLoading`,
+    // so that we prevent a race condition where the `timeData` is reset
+    // before `isLoading` is set to `true`.
+    if (isLoading) {
       setTimeData(null);
       fetchTimeData();
     }
-  }, [setIsLoading, CITY_TO_IANA_NAME, selectedCity.section]);
+  }, [isLoading, CITY_TO_IANA_NAME, selectedCity.section]);
   
   return (
     <div className='time-display-wrapper'>
