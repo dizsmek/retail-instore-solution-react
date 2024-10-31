@@ -1,0 +1,40 @@
+$nav-text-color: #a3a3a3;
+$nav-text-active-color: #0b0b0b;
+$nav-text-hover-color: #427caa;
+
+.nav {
+  margin-block: 2rem;
+  color: $nav-text-color;
+
+  ul.nav-list {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    border-bottom: solid 1px $nav-text-color;
+
+    li.nav-list-item {
+      padding: .5rem 1rem;
+      cursor: pointer;
+
+      &.active {
+        color: $nav-text-active-color;
+        cursor: default;
+      }
+
+      &:not(.active):hover .link {
+        color: $nav-text-hover-color;
+      }
+
+      .link {
+        transition: color 100ms;
+      }
+    }
+
+    .nav-indicator {
+      position: absolute;
+      bottom: -1px;
+      height: 1px;
+      background-color: $nav-text-active-color;
+    }
+  }
+}
